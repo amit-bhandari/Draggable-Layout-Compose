@@ -1,6 +1,7 @@
 package com.bhandari.drag.layout
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,8 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import kotlin.math.abs
 
-enum class Direction { UP, DOWN, LEFT, RIGHT }
+enum class Direction { DOWN, UP, RIGHT, LEFT }
 
 @Composable
 fun Modifier.getDraggableModifier(
@@ -21,34 +23,83 @@ fun Modifier.getDraggableModifier(
     snapThreshold: Float = 0f,
     percentRevealListener: (Float) -> Unit = {}
 ): Modifier {
-    var verticalDelta by remember {
-        mutableFloatStateOf(0f)
-    }
+    var verticalDragDelta by remember { mutableFloatStateOf(0f) }
+    var horizontalDragDelta by remember { mutableFloatStateOf(0f) }
 
-    val verticalAnimated by animateFloatAsState(
-        targetValue = verticalDelta,
-        label = "Offset Animation",
+    val verticalDragDeltaAnimated by animateFloatAsState(
+        targetValue = verticalDragDelta,
+        label = "Vertical Offset Animation",
     )
 
-    var height by remember {
-        mutableFloatStateOf(0f)
+    val horizontalDragDeltaAnimated by animateFloatAsState(
+        targetValue = horizontalDragDelta,
+        label = "Horizontal Offset Animation",
+    )
+
+    var height by remember { mutableFloatStateOf(0f) }
+    var width by remember { mutableFloatStateOf(0f) }
+
+    fun deltaToVisiblePercentage(delta: Float, dimen: Float): Float {
+        return 1 - (abs(delta) / dimen)
+    }
+
+    fun initialDelta(): Float {
+        return when (direction) {
+            Direction.DOWN, Direction.UP -> {
+                (if (direction == Direction.DOWN) -1f else 1f) * height * (1f - percentShow)
+            }
+
+            Direction.RIGHT, Direction.LEFT -> {
+                (if (direction == Direction.RIGHT) -1f else 1f) * width * (1f - percentShow)
+            }
+        }
     }
 
     return this
-        .drawBehind { verticalDelta = size.height.also { height = it } * (1f - percentShow) }
-        .graphicsLayer(translationY = verticalAnimated)
-        .pointerInput(Unit) {
-            detectVerticalDragGestures(
-                onDragEnd = {
-                    val percent = verticalDelta / height
-                    verticalDelta = if (percent > 1 - snapThreshold)
-                        height * (1f - percentShow) //snap to collapsed
-                    else
-                        0f //snap to expanded
+        .drawBehind {
+            when (direction) {
+                Direction.DOWN, Direction.UP -> {
+                    height = size.height
+                    verticalDragDelta = initialDelta()
                 }
-            ) { _, dragAmount ->
-                percentRevealListener(1 - (verticalDelta / height))
-                verticalDelta += dragAmount
+
+                Direction.RIGHT, Direction.LEFT -> {
+                    width = size.width
+                    horizontalDragDelta = initialDelta()
+                }
+            }
+        }
+        .graphicsLayer(
+            translationX = horizontalDragDeltaAnimated,
+            translationY = verticalDragDeltaAnimated
+        )
+        .pointerInput(Unit) {
+            when (direction) {
+                Direction.DOWN, Direction.UP -> {
+                    detectVerticalDragGestures(
+                        onDragEnd = {
+                            val percent = deltaToVisiblePercentage(verticalDragDelta, height)
+                            verticalDragDelta =
+                                if (percent < snapThreshold) initialDelta() else 0f
+                        }
+                    ) { _, dragAmount ->
+                        percentRevealListener(deltaToVisiblePercentage(verticalDragDelta, height))
+                        verticalDragDelta += dragAmount
+                    }
+                }
+
+                Direction.RIGHT, Direction.LEFT -> {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            val percent = deltaToVisiblePercentage(horizontalDragDelta, width)
+                            horizontalDragDelta =
+                                if (percent < snapThreshold) initialDelta() else 0f
+                        }
+                    ) { _, dragAmount ->
+                        percentRevealListener(deltaToVisiblePercentage(horizontalDragDelta, width))
+                        horizontalDragDelta += dragAmount
+                    }
+                }
             }
         }
 }

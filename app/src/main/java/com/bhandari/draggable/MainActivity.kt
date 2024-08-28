@@ -46,8 +46,8 @@ fun Activity(modifier: Modifier = Modifier) {
                     .padding(innerPadding)
                     .getDraggableModifier(
                         direction = Direction.UP,
-                        percentShow = 0.1f,
-                        snapThreshold = 0.5f,
+                        percentShow = 0.2f,
+                        snapThreshold = 0.7f,
                         percentRevealListener = { println("Percent reveal $it") }
                     ),
                 shape = RoundedCornerShape(20.dp)
