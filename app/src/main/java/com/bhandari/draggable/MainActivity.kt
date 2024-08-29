@@ -48,13 +48,13 @@ fun Activity(modifier: Modifier = Modifier) {
                         direction = Direction.UP,
                         percentShow = 0.2f,
                         snapThreshold = 0.7f,
-                        percentRevealListener = { println("Percent reveal $it") }
+                        percentRevealListener = { println("Revealed percent $it") }
                     ),
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Box(
                     modifier = modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.BottomEnd
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.rocket),

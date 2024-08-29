@@ -1,5 +1,6 @@
 package com.bhandari.drag.layout
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -68,6 +69,12 @@ fun Modifier.getDraggableModifier(
                     horizontalDragDelta = initialDelta()
                 }
             }
+            /*
+            //this breaks UI todo figure out why
+            Log.d(
+                TAG,
+                "Initial size:$size. Offset applied horizontal: $horizontalDragDelta, vertical: $verticalDragDelta "
+            )*/
         }
         .graphicsLayer(
             translationX = horizontalDragDeltaAnimated,
@@ -84,7 +91,13 @@ fun Modifier.getDraggableModifier(
                         }
                     ) { _, dragAmount ->
                         percentRevealListener(deltaToVisiblePercentage(verticalDragDelta, height))
-                        verticalDragDelta += dragAmount
+                        if (direction == Direction.UP && verticalDragDelta < 0) {
+                            Log.d(TAG, "Reveal overshoot $direction: ")
+                        } else if (direction == Direction.DOWN && verticalDragDelta > 0) {
+                            Log.d(TAG, "Reveal overshoot $direction: ")
+                        } else {
+                            verticalDragDelta += dragAmount
+                        }
                     }
                 }
 
@@ -97,7 +110,13 @@ fun Modifier.getDraggableModifier(
                         }
                     ) { _, dragAmount ->
                         percentRevealListener(deltaToVisiblePercentage(horizontalDragDelta, width))
-                        horizontalDragDelta += dragAmount
+                        if (direction == Direction.LEFT && horizontalDragDelta < 0) {
+                            Log.d(TAG, "Reveal overshoot $direction: ")
+                        } else if (direction == Direction.RIGHT && horizontalDragDelta > 0) {
+                            Log.d(TAG, "Reveal overshoot $direction: ")
+                        } else {
+                            horizontalDragDelta += dragAmount
+                        }
                     }
                 }
             }
