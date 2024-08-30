@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import kotlin.math.abs
 
 enum class Direction { DOWN, UP, RIGHT, LEFT }
@@ -65,9 +66,14 @@ fun Modifier.getDraggableModifier(
     percentRevealListener(deltaToVisiblePercentage(delta, dimen))
 
     return this
-        .drawBehind {
-            height = size.height
-            width = size.width
+        .graphicsLayer(
+            translationX = horizontalDragDeltaAnimated,
+            translationY = verticalDragDeltaAnimated
+        )
+        .onGloballyPositioned {
+            val size = it.size
+            height = size.height.toFloat()
+            width = size.width.toFloat()
             when (direction) {
                 Direction.DOWN, Direction.UP -> verticalDragDelta =
                     percentageToDelta(direction, percentShow, height)
@@ -75,16 +81,7 @@ fun Modifier.getDraggableModifier(
                 Direction.RIGHT, Direction.LEFT -> horizontalDragDelta =
                     percentageToDelta(direction, percentShow, width)
             }
-            //this breaks UI todo figure out why
-            /*Log.d(
-                TAG,
-                "Initial size:$size. Offset applied horizontal: $horizontalDragDelta, vertical: $verticalDragDelta "
-            )*/
         }
-        .graphicsLayer(
-            translationX = horizontalDragDeltaAnimated,
-            translationY = verticalDragDeltaAnimated
-        )
         .pointerInput(Unit) {
             when (direction) {
                 Direction.DOWN, Direction.UP -> {
