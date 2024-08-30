@@ -82,7 +82,7 @@ fun DraggableLayout(modifier: Modifier, dragListener: (Float) -> Unit) {
         border = BorderStroke(5.dp, color = Color.Magenta),
         modifier = modifier
             .getDraggableModifier(
-                direction = Direction.RIGHT,
+                direction = Direction.UP,
                 percentShow = 0.2f,
                 snapThreshold = 0.5f,
                 maxReveal = 0.8f,

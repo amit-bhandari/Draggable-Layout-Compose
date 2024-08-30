@@ -1,6 +1,7 @@
 package com.bhandari.drag.layout
 
 import android.util.Log
+import androidx.annotation.FloatRange
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -17,12 +18,21 @@ import kotlin.math.abs
 
 enum class Direction { DOWN, UP, RIGHT, LEFT }
 
+/**
+ * Modifier which can help you make your view draggable from any of the [Direction]
+ * @param direction Direction in which view should be dragged
+ * @param percentShow Initial percentage of total width for [Direction.RIGHT] or [Direction.LEFT] and height for [Direction.UP] or [Direction.DOWN] to be visible
+ * @param maxReveal Maximum percentage of reveal possible for view after dragging
+ * @param snapThreshold Threshold which decides where the view will rest once finger is lifted.
+ *        View will either go to [percentShow] or [maxReveal] depending on where drag action was released.
+ * @param percentRevealListener listener which provides callback to know current reveal percentage
+ */
 @Composable
 fun Modifier.getDraggableModifier(
     direction: Direction,
-    percentShow: Float = 0.2f,
-    maxReveal: Float = 1f,
-    snapThreshold: Float = 0f,
+    @FloatRange(0.0, 1.0) percentShow: Float = 1f,
+    @FloatRange(0.0, 1.0) maxReveal: Float = 1f,
+    @FloatRange(0.0, 1.0) snapThreshold: Float = 0f,
     percentRevealListener: (Float) -> Unit = {}
 ): Modifier {
     var verticalDragDelta by remember { mutableFloatStateOf(0f) }
@@ -53,20 +63,17 @@ fun Modifier.getDraggableModifier(
 
     return this
         .drawBehind {
+            height = size.height
+            width = size.width
             when (direction) {
-                Direction.DOWN, Direction.UP -> {
-                    height = size.height
-                    verticalDragDelta = percentageToDelta(direction, percentShow, height)
-                }
+                Direction.DOWN, Direction.UP -> verticalDragDelta =
+                    percentageToDelta(direction, percentShow, height)
 
-                Direction.RIGHT, Direction.LEFT -> {
-                    width = size.width
-                    horizontalDragDelta = percentageToDelta(direction, percentShow, width)
-                }
+                Direction.RIGHT, Direction.LEFT -> horizontalDragDelta =
+                    percentageToDelta(direction, percentShow, width)
             }
-            /*
             //this breaks UI todo figure out why
-            Log.d(
+            /*Log.d(
                 TAG,
                 "Initial size:$size. Offset applied horizontal: $horizontalDragDelta, vertical: $verticalDragDelta "
             )*/
