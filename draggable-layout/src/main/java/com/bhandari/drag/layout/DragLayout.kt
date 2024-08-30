@@ -41,44 +41,13 @@ fun Modifier.getDraggableModifier(
     var height by remember { mutableFloatStateOf(0f) }
     var width by remember { mutableFloatStateOf(0f) }
 
-    fun deltaToVisiblePercentage(delta: Float, dimen: Float): Float {
-        return 1 - (abs(delta) / dimen)
-    }
+    val delta =
+        if (direction == Direction.UP || direction == Direction.DOWN) verticalDragDeltaAnimated
+        else horizontalDragDeltaAnimated
 
-    fun initialDelta(): Float {
-        return when (direction) {
-            Direction.DOWN, Direction.UP -> {
-                (if (direction == Direction.DOWN) -1f else 1f) * height * (1f - percentShow)
-            }
-
-            Direction.RIGHT, Direction.LEFT -> {
-                (if (direction == Direction.RIGHT) -1f else 1f) * width * (1f - percentShow)
-            }
-        }
-    }
-
-    fun maxRevealDelta(): Float {
-        return when (direction) {
-            Direction.DOWN, Direction.UP -> {
-                (if (direction == Direction.DOWN) -1f else 1f) * height * (1f - maxReveal)
-            }
-
-            Direction.RIGHT, Direction.LEFT -> {
-                (if (direction == Direction.RIGHT) -1f else 1f) * width * (1f - maxReveal)
-            }
-        }
-    }
-
-
-    val delta = if (direction == Direction.UP || direction == Direction.DOWN)
-        verticalDragDeltaAnimated
-    else
-        horizontalDragDeltaAnimated
-
-    val dimen = if (direction == Direction.UP || direction == Direction.DOWN)
-        height
-    else
-        width
+    val dimen =
+        if (direction == Direction.UP || direction == Direction.DOWN) height
+        else width
 
     percentRevealListener(deltaToVisiblePercentage(delta, dimen))
 
@@ -87,12 +56,12 @@ fun Modifier.getDraggableModifier(
             when (direction) {
                 Direction.DOWN, Direction.UP -> {
                     height = size.height
-                    verticalDragDelta = initialDelta()
+                    verticalDragDelta = percentageToDelta(direction, percentShow, height)
                 }
 
                 Direction.RIGHT, Direction.LEFT -> {
                     width = size.width
-                    horizontalDragDelta = initialDelta()
+                    horizontalDragDelta = percentageToDelta(direction, percentShow, width)
                 }
             }
             /*
@@ -111,18 +80,20 @@ fun Modifier.getDraggableModifier(
                 Direction.DOWN, Direction.UP -> {
                     detectVerticalDragGestures(
                         onDragEnd = {
+                            val visiblePercent = deltaToVisiblePercentage(verticalDragDelta, height)
                             verticalDragDelta =
-                                if (deltaToVisiblePercentage(verticalDragDelta, height) < snapThreshold)
-                                    initialDelta()
-                                 else
-                                    maxRevealDelta()
+                                if (visiblePercent < snapThreshold)
+                                    percentageToDelta(direction, percentShow, height)
+                                else
+                                    percentageToDelta(direction, maxReveal, height)
                         }
                     ) { _, dragAmount ->
+                        val visiblePercent = deltaToVisiblePercentage(verticalDragDelta, height)
                         if (direction == Direction.UP && verticalDragDelta < 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
                         } else if (direction == Direction.DOWN && verticalDragDelta > 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
-                        } else if (deltaToVisiblePercentage(verticalDragDelta, height) > maxReveal) {
+                        } else if (visiblePercent > maxReveal) {
                             Log.d(TAG, "Max reveal reached $maxReveal")
                         } else {
                             verticalDragDelta += dragAmount
@@ -133,18 +104,21 @@ fun Modifier.getDraggableModifier(
                 Direction.RIGHT, Direction.LEFT -> {
                     detectHorizontalDragGestures(
                         onDragEnd = {
-                             horizontalDragDelta =
-                                if (deltaToVisiblePercentage(horizontalDragDelta, width) < snapThreshold)
-                                    initialDelta()
+                            val visiblePercent =
+                                deltaToVisiblePercentage(horizontalDragDelta, width)
+                            horizontalDragDelta =
+                                if (visiblePercent < snapThreshold)
+                                    percentageToDelta(direction, percentShow, width)
                                 else
-                                    maxRevealDelta()
+                                    percentageToDelta(direction, maxReveal, width)
                         }
                     ) { _, dragAmount ->
+                        val visiblePercent = deltaToVisiblePercentage(horizontalDragDelta, width)
                         if (direction == Direction.LEFT && horizontalDragDelta < 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
                         } else if (direction == Direction.RIGHT && horizontalDragDelta > 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
-                        } else if (deltaToVisiblePercentage(horizontalDragDelta, width) > maxReveal) {
+                        } else if (visiblePercent > maxReveal) {
                             Log.d(TAG, "Max reveal reached $maxReveal")
                         } else {
                             horizontalDragDelta += dragAmount
@@ -153,4 +127,12 @@ fun Modifier.getDraggableModifier(
                 }
             }
         }
+}
+
+fun deltaToVisiblePercentage(delta: Float, dimen: Float): Float {
+    return 1 - (abs(delta) / dimen)
+}
+
+fun percentageToDelta(direction: Direction, percent: Float, dimen: Float): Float {
+    return (if (direction == Direction.DOWN || direction == Direction.RIGHT) -1f else 1f) * dimen * (1f - percent)
 }
