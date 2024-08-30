@@ -17,10 +17,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.abs
 
 enum class Direction { DOWN, UP, RIGHT, LEFT }
+enum class DragMode { SNAP, HOLD }
 
 /**
  * Modifier which can help you make your view draggable from any of the [Direction]
  * @param direction Direction in which view should be dragged
+ * @param mode For [DragMode.HOLD], [snapThreshold] will be ignored.
  * @param percentShow Initial percentage of total width for [Direction.RIGHT] or [Direction.LEFT] and height for [Direction.UP] or [Direction.DOWN] to be visible
  * @param maxReveal Maximum percentage of reveal possible for view after dragging
  * @param snapThreshold Threshold which decides where the view will rest once finger is lifted.
@@ -30,6 +32,7 @@ enum class Direction { DOWN, UP, RIGHT, LEFT }
 @Composable
 fun Modifier.getDraggableModifier(
     direction: Direction,
+    mode: DragMode = DragMode.SNAP,
     @FloatRange(0.0, 1.0) percentShow: Float = 1f,
     @FloatRange(0.0, 1.0) maxReveal: Float = 1f,
     @FloatRange(0.0, 1.0) snapThreshold: Float = 0f,
@@ -87,12 +90,15 @@ fun Modifier.getDraggableModifier(
                 Direction.DOWN, Direction.UP -> {
                     detectVerticalDragGestures(
                         onDragEnd = {
-                            val visiblePercent = deltaToVisiblePercentage(verticalDragDelta, height)
-                            verticalDragDelta =
-                                if (visiblePercent < snapThreshold)
-                                    percentageToDelta(direction, percentShow, height)
-                                else
-                                    percentageToDelta(direction, maxReveal, height)
+                            if (mode == DragMode.SNAP) {
+                                val visiblePercent =
+                                    deltaToVisiblePercentage(verticalDragDelta, height)
+                                verticalDragDelta =
+                                    if (visiblePercent < snapThreshold)
+                                        percentageToDelta(direction, percentShow, height)
+                                    else
+                                        percentageToDelta(direction, maxReveal, height)
+                            }
                         }
                     ) { _, dragAmount ->
                         val visiblePercent = deltaToVisiblePercentage(verticalDragDelta, height)
@@ -111,13 +117,15 @@ fun Modifier.getDraggableModifier(
                 Direction.RIGHT, Direction.LEFT -> {
                     detectHorizontalDragGestures(
                         onDragEnd = {
-                            val visiblePercent =
-                                deltaToVisiblePercentage(horizontalDragDelta, width)
-                            horizontalDragDelta =
-                                if (visiblePercent < snapThreshold)
-                                    percentageToDelta(direction, percentShow, width)
-                                else
-                                    percentageToDelta(direction, maxReveal, width)
+                            if (mode == DragMode.SNAP) {
+                                val visiblePercent =
+                                    deltaToVisiblePercentage(horizontalDragDelta, width)
+                                horizontalDragDelta =
+                                    if (visiblePercent < snapThreshold)
+                                        percentageToDelta(direction, percentShow, width)
+                                    else
+                                        percentageToDelta(direction, maxReveal, width)
+                            }
                         }
                     ) { _, dragAmount ->
                         val visiblePercent = deltaToVisiblePercentage(horizontalDragDelta, width)

@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bhandari.drag.layout.Direction
+import com.bhandari.drag.layout.DragMode
 import com.bhandari.drag.layout.R
 import com.bhandari.drag.layout.getDraggableModifier
 import com.bhandari.draggable.ui.theme.DraggableLayoutComposeTheme
@@ -83,6 +84,7 @@ fun DraggableLayout(modifier: Modifier, dragListener: (Float) -> Unit) {
         modifier = modifier
             .getDraggableModifier(
                 direction = Direction.UP,
+                mode = DragMode.SNAP,
                 percentShow = 0.2f,
                 snapThreshold = 0.5f,
                 maxReveal = 0.8f,
