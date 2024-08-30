@@ -21,6 +21,7 @@ enum class Direction { DOWN, UP, RIGHT, LEFT }
 fun Modifier.getDraggableModifier(
     direction: Direction,
     percentShow: Float = 0.2f,
+    maxReveal: Float = 1f,
     snapThreshold: Float = 0f,
     percentRevealListener: (Float) -> Unit = {}
 ): Modifier {
@@ -56,6 +57,31 @@ fun Modifier.getDraggableModifier(
         }
     }
 
+    fun maxRevealDelta(): Float {
+        return when (direction) {
+            Direction.DOWN, Direction.UP -> {
+                (if (direction == Direction.DOWN) -1f else 1f) * height * (1f - maxReveal)
+            }
+
+            Direction.RIGHT, Direction.LEFT -> {
+                (if (direction == Direction.RIGHT) -1f else 1f) * width * (1f - maxReveal)
+            }
+        }
+    }
+
+
+    val delta = if (direction == Direction.UP || direction == Direction.DOWN)
+        verticalDragDeltaAnimated
+    else
+        horizontalDragDeltaAnimated
+
+    val dimen = if (direction == Direction.UP || direction == Direction.DOWN)
+        height
+    else
+        width
+
+    percentRevealListener(deltaToVisiblePercentage(delta, dimen))
+
     return this
         .drawBehind {
             when (direction) {
@@ -85,16 +111,19 @@ fun Modifier.getDraggableModifier(
                 Direction.DOWN, Direction.UP -> {
                     detectVerticalDragGestures(
                         onDragEnd = {
-                            val percent = deltaToVisiblePercentage(verticalDragDelta, height)
                             verticalDragDelta =
-                                if (percent < snapThreshold) initialDelta() else 0f
+                                if (deltaToVisiblePercentage(verticalDragDelta, height) < snapThreshold)
+                                    initialDelta()
+                                 else
+                                    maxRevealDelta()
                         }
                     ) { _, dragAmount ->
-                        percentRevealListener(deltaToVisiblePercentage(verticalDragDelta, height))
                         if (direction == Direction.UP && verticalDragDelta < 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
                         } else if (direction == Direction.DOWN && verticalDragDelta > 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
+                        } else if (deltaToVisiblePercentage(verticalDragDelta, height) > maxReveal) {
+                            Log.d(TAG, "Max reveal reached $maxReveal")
                         } else {
                             verticalDragDelta += dragAmount
                         }
@@ -104,16 +133,19 @@ fun Modifier.getDraggableModifier(
                 Direction.RIGHT, Direction.LEFT -> {
                     detectHorizontalDragGestures(
                         onDragEnd = {
-                            val percent = deltaToVisiblePercentage(horizontalDragDelta, width)
-                            horizontalDragDelta =
-                                if (percent < snapThreshold) initialDelta() else 0f
+                             horizontalDragDelta =
+                                if (deltaToVisiblePercentage(horizontalDragDelta, width) < snapThreshold)
+                                    initialDelta()
+                                else
+                                    maxRevealDelta()
                         }
                     ) { _, dragAmount ->
-                        percentRevealListener(deltaToVisiblePercentage(horizontalDragDelta, width))
                         if (direction == Direction.LEFT && horizontalDragDelta < 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
                         } else if (direction == Direction.RIGHT && horizontalDragDelta > 0) {
                             Log.d(TAG, "Reveal overshoot $direction: ")
+                        } else if (deltaToVisiblePercentage(horizontalDragDelta, width) > maxReveal) {
+                            Log.d(TAG, "Max reveal reached $maxReveal")
                         } else {
                             horizontalDragDelta += dragAmount
                         }

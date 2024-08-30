@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Draggable-Layout-Compose"
 include(":app")
 include(":draggable-layout")
+include(":wave-progress")
