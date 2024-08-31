@@ -48,4 +48,8 @@ Card(
   - Value at which decision of whether to move component to fully reveal state or collapsed state is made.
 - **percentRevealListener**
   - Callback which can be used to adjust other layout with respect to dragging of original component.
-  - Example: In videos above, batman is scaled with respect to drag motion. 
+  - Example: In videos above, batman is scaled with respect to drag motion.
+
+## Thank You!
+- Give a ⭐️ if you like my work, good will costs you nothing!
+ 
