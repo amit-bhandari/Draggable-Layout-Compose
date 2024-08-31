@@ -1,43 +1,27 @@
 package com.bhandari.draggable
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.bhandari.drag.layout.Direction
 import com.bhandari.drag.layout.DragMode
 import com.bhandari.drag.layout.getDraggableModifier
@@ -53,26 +37,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Activity(modifier: Modifier = Modifier) {
+fun Activity() {
     var alpha by remember { mutableFloatStateOf(0f) }
-    val dragUiHeight = 60.dp
 
     DraggableLayoutComposeTheme {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-        ) { innerPadding ->
-            MainLayout(
-                dragUiHeight = dragUiHeight,
-                modifier = Modifier
-                    .background(Color.Black)
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .alpha(1 - alpha)
-            )
+        ) { _ ->
+            MainLayout()
             DraggableLayout(
-                dragUiHeight,
                 dragListener = {
                     println("Drag listener $it")
                     alpha = it
@@ -83,126 +59,19 @@ fun Activity(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MainLayout(modifier: Modifier, dragUiHeight: Dp, scale: Float = 1f) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp, top = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                modifier = Modifier
-                    .size(16.dp, 16.dp)
-                    .weight(15f),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.arrow_back_ios),
-                contentDescription = "Back",
-            )
-            Text(
-                modifier = Modifier.weight(55f),
-                text = "Now Playing",
-                color = Color.White,
-            )
-            Image(
-                modifier = Modifier
-                    .size(24.dp, 24.dp)
-                    .weight(10f),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.ios_share),
-                contentDescription = "Share"
-            )
-            Image(
-                modifier = Modifier
-                    .size(24.dp, 24.dp)
-                    .weight(15f),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.star_24dp),
-                contentDescription = "Star"
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .weight(6f)
-        ) {
-            Card(
-                border = BorderStroke(2.dp, color = Color.White),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(250.dp, 250.dp),
-                shape = RoundedCornerShape(8.dp),
-            ) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = painterResource(id = com.bhandari.draggable.R.drawable.albumart),
-                    contentDescription = "Back",
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(2f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Sanam Teri Kasam",
-                color = Color.White,
-                fontSize = 24.sp,
-                style = TextStyle(fontWeight = FontWeight.Bold)
-            )
-            Text(
-                text = "Harshvardhan",
-                color = Color.White,
-                fontSize = 16.sp
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = dragUiHeight + 48.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                modifier = Modifier.size(32.dp, 32.dp),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.keyboard_arrow_down),
-                contentDescription = "Back",
-            )
-            Image(
-                modifier = Modifier.size(32.dp, 32.dp),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.skip_previous),
-                contentDescription = "Back"
-            )
-            Image(
-                modifier = Modifier.size(75.dp, 75.dp),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.play_circle),
-                contentDescription = "Back"
-            )
-            Image(
-                modifier = Modifier.size(32.dp, 32.dp),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.skip_next),
-                contentDescription = "Back"
-            )
-            Image(
-                modifier = Modifier.size(32.dp, 32.dp),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.shuffle),
-                contentDescription = "Back"
-            )
-        }
-
-        Spacer(modifier = Modifier.size(dragUiHeight))
-    }
+fun MainLayout(scale: Float = 1f) {
+    Image(
+        modifier = Modifier.fillMaxSize(),
+        painter = painterResource(id = R.drawable.sky),
+        contentDescription = "Superman",
+        contentScale = ContentScale.Crop,
+        alpha = scale
+    )
 }
 
 
 @Composable
-fun DraggableLayout(dragUiHeight: Dp, dragListener: (Float) -> Unit) {
+fun DraggableLayout(dragListener: (Float) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxSize()
@@ -219,26 +88,12 @@ fun DraggableLayout(dragUiHeight: Dp, dragListener: (Float) -> Unit) {
             containerColor = Color(0xFF222222),
         ),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .size(dragUiHeight),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                modifier = Modifier.size(24.dp, 24.dp),
-                painter = painterResource(id = com.bhandari.draggable.R.drawable.drag_handle),
-                contentDescription = "Back",
-            )
-            Text(
-                "Up Next",
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.White,
-                style = TextStyle(fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center
-            )
-        }
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(id = R.drawable.superman),
+            contentDescription = "Superman",
+            contentScale = ContentScale.Crop
+        )
     }
 }
 
