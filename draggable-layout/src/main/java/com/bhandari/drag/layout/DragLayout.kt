@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 enum class Direction { DOWN, UP, RIGHT, LEFT }
 enum class DragMode { SNAP, HOLD }
@@ -105,7 +107,15 @@ fun Modifier.getDraggableModifier(
                         } else if (visiblePercent > maxReveal) {
                             Log.d(TAG, "Max reveal reached $maxReveal")
                         } else {
-                            verticalDragDelta += dragAmount
+                            when (direction) {
+                                Direction.DOWN -> verticalDragDelta =
+                                    min(verticalDragDelta + dragAmount, height * (1 - maxReveal))
+
+                                Direction.UP -> verticalDragDelta =
+                                    max(verticalDragDelta + dragAmount, height * (1 - maxReveal))
+
+                                else -> {}
+                            }
                         }
                     }
                 }
@@ -132,7 +142,15 @@ fun Modifier.getDraggableModifier(
                         } else if (visiblePercent > maxReveal) {
                             Log.d(TAG, "Max reveal reached $maxReveal")
                         } else {
-                            horizontalDragDelta += dragAmount
+                            when (direction) {
+                                Direction.RIGHT -> horizontalDragDelta =
+                                    min(horizontalDragDelta + dragAmount, width * (1 - maxReveal))
+
+                                Direction.LEFT -> horizontalDragDelta =
+                                    max(horizontalDragDelta + dragAmount, width * (1 - maxReveal))
+
+                                else -> {}
+                            }
                         }
                     }
                 }

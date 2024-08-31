@@ -98,7 +98,7 @@ fun DraggableLayout(dragListener: (Float) -> Unit) {
                 mode = DragMode.SNAP,
                 percentShow = 0.2f,
                 snapThreshold = 0.5f,
-                maxReveal = 0.9f,
+                maxReveal = 0.8f,
                 percentRevealListener = dragListener
             ),
         shape = RoundedCornerShape(18.dp),
